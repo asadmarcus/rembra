@@ -1,6 +1,6 @@
 {
   "name": "rembra-electron",
-  "version": "1.0.4",
+  "version": "1.0.1",
   "description": "Rembra AI Meeting Assistant for Windows",
   "main": "src/main.js",
   "scripts": {
