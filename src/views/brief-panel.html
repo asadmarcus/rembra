@@ -1,0 +1,1742 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: transparent;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        .brief-panel {
+            width: 600px;
+            height: 680px;
+            min-width: 400px;
+            max-width: 680px;
+            min-height: 500px;
+            max-height: 880px;
+            background: rgba(15, 15, 15, 0.95);
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 
+                0 4px 8px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: absolute;
+            top: 0;
+            left: 0;
+            margin: 10px;
+            user-select: none;
+            z-index: 9999;
+        }
+
+        .brief-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.08) 0%, 
+                rgba(255, 255, 255, 0.02) 50%, 
+                rgba(0, 0, 0, 0.05) 100%);
+            border-radius: 16px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .brief-panel > * {
+            position: relative;
+            z-index: 2;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px 16px 0 0;
+            cursor: move;
+            -webkit-app-region: drag;
+            flex-shrink: 0;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-icon {
+            font-size: 16px;
+            color: #ffffff;
+        }
+
+        .header-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .header-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .header-subtitle {
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .header-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: none;
+            border-radius: 6px;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+            -webkit-app-region: no-drag;
+        }
+
+        .header-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+
+        .content {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-height: 0;
+            position: relative;
+            border-radius: 0 0 16px 16px;
+        }
+
+        .content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .content::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        .content::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.95);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .client-list {
+            display: flex;
+            flex-direction: column;
+            max-height: 240px;
+            overflow-y: auto;
+            gap: 8px;
+        }
+
+        .client-list::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .client-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .client-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+        }
+
+        .client-list::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .client-card {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1.5px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 0;
+        }
+
+        .client-card:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .client-card.selected {
+            background: rgba(255, 165, 0, 0.2);
+            border: 1.5px solid rgba(255, 165, 0, 0.4);
+        }
+
+        .client-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .client-card.selected .client-avatar {
+            background: rgba(0, 122, 255, 0.8);
+            color: white;
+        }
+
+        .client-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .client-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 1);
+        }
+
+        .client-company {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.75);
+            font-weight: 500;
+        }
+
+        .client-industry {
+            font-size: 11px;
+            color: rgba(255, 165, 0, 0.8);
+        }
+
+        .checkmark {
+            color: rgba(255, 165, 0, 0.9);
+            font-size: 16px;
+            display: none;
+        }
+
+        .client-card.selected .checkmark {
+            display: block;
+        }
+
+        .form-field {
+            margin-bottom: 10px;
+        }
+
+        .form-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 6px;
+            display: block;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 10px;
+            padding: 12px 14px;
+            color: rgba(255, 255, 255, 1);
+            font-size: 14px;
+            outline: none;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+
+        .form-input:focus {
+            border-color: rgba(0, 122, 255, 0.8);
+            background: rgba(255, 255, 255, 0.18);
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
+        }
+
+        .form-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+            font-style: italic;
+        }
+
+        .form-textarea {
+            height: 70px;
+            resize: vertical;
+            font-family: inherit;
+            line-height: 1.4;
+            min-height: 60px;
+            max-height: 120px;
+        }
+
+        .topic-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .topic-select {
+            flex: 1;
+        }
+
+        .add-topic-btn {
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .add-topic-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .followup-section {
+            background: rgba(0, 122, 255, 0.1);
+            border: 1px solid rgba(0, 122, 255, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 12px;
+        }
+
+        .followup-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .followup-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+        }
+
+        .toggle-switch {
+            width: 32px;
+            height: 18px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 9px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .toggle-switch.active {
+            background: rgba(0, 122, 255, 0.8);
+        }
+
+        .toggle-knob {
+            width: 14px;
+            height: 14px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.2s ease;
+        }
+
+        .toggle-switch.active .toggle-knob {
+            transform: translateX(14px);
+        }
+
+        .view-previous-btn {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            padding: 4px 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .view-previous-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .followup-note {
+            font-size: 10px;
+            color: rgba(0, 122, 255, 0.9);
+            background: rgba(0, 122, 255, 0.2);
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .previous-briefs {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 8px;
+        }
+
+        .previous-brief-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            padding: 8px;
+            margin-bottom: 6px;
+        }
+
+        .brief-card-title {
+            font-size: 11px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 2px;
+        }
+
+        .brief-card-date {
+            font-size: 9px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .attachments-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .add-files-btn {
+            background: none;
+            border: none;
+            color: rgba(0, 122, 255, 0.8);
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .add-files-btn:hover {
+            color: rgba(0, 122, 255, 1);
+        }
+
+        .file-drop-zone {
+            border: 2px dashed rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .file-drop-zone:hover {
+            border-color: rgba(0, 122, 255, 0.6);
+            background: rgba(0, 122, 255, 0.05);
+        }
+
+        .file-drop-zone.drag-over {
+            border-color: rgba(0, 122, 255, 0.8);
+            background: rgba(0, 122, 255, 0.1);
+        }
+
+        .drop-icon {
+            font-size: 20px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .drop-text {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .drop-subtext {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .file-list {
+            margin-top: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .file-icon {
+            font-size: 16px;
+            color: rgba(0, 122, 255, 0.8);
+            width: 20px;
+            text-align: center;
+        }
+
+        .file-info {
+            flex: 1;
+        }
+
+        .file-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.2;
+        }
+
+        .file-summary {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 2px;
+            line-height: 1.3;
+        }
+
+        .remove-file-btn {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            font-size: 16px;
+            padding: 4px;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .remove-file-btn:hover {
+            color: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .add-more-files {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: rgba(0, 122, 255, 0.05);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            width: 100%;
+            color: rgba(0, 122, 255, 0.8);
+            font-size: 12px;
+        }
+
+        .add-more-files:hover {
+            background: rgba(0, 122, 255, 0.1);
+        }
+
+        .generate-btn-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 16px;
+            padding: 12px 0 0 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .generate-btn {
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.9), rgba(255, 149, 0, 0.8));
+            border: none;
+            border-radius: 10px;
+            padding: 12px 24px;
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            min-width: 140px;
+        }
+
+        .generate-btn:disabled {
+            background: rgba(255, 255, 255, 0.15);
+            cursor: not-allowed;
+        }
+
+        .generate-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, rgba(255, 165, 0, 1), rgba(255, 149, 0, 0.9));
+            transform: translateY(-1px);
+        }
+
+        .loading-spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .brief-result {
+            display: none;
+        }
+
+        .brief-result.visible {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .success-icon {
+            color: #34C759;
+            font-size: 18px;
+        }
+
+        .result-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .brief-content {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            padding: 16px;
+            height: 280px;
+            overflow-y: auto;
+            font-size: 13px;
+            line-height: 1.5;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* Enhanced Brief Content Markdown Styling */
+        .brief-content h1,
+        .brief-content h2,
+        .brief-content h3,
+        .brief-content h4,
+        .brief-content h5,
+        .brief-content h6 {
+            color: #ffffff;
+            font-weight: 600;
+            margin: 16px 0 12px 0;
+            line-height: 1.3;
+        }
+
+        .brief-content h1 {
+            font-size: 18px;
+            color: #FF9500;
+            border-bottom: 2px solid rgba(255, 149, 0, 0.3);
+            padding-bottom: 8px;
+        }
+
+        .brief-content h2 {
+            font-size: 16px;
+            color: #FF9500;
+            border-bottom: 1px solid rgba(255, 149, 0, 0.2);
+            padding-bottom: 6px;
+        }
+
+        .brief-content h3 {
+            font-size: 15px;
+            color: #007AFF;
+        }
+
+        .brief-content h4 {
+            font-size: 14px;
+            color: #007AFF;
+        }
+
+        .brief-content h5,
+        .brief-content h6 {
+            font-size: 13px;
+            color: #34C759;
+        }
+
+        .brief-content p {
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+
+        .brief-content strong {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .brief-content em {
+            color: #FF9500;
+            font-style: italic;
+        }
+
+        .brief-content ul,
+        .brief-content ol {
+            margin: 12px 0;
+            padding-left: 20px;
+        }
+
+        .brief-content li {
+            margin: 6px 0;
+            line-height: 1.5;
+        }
+
+        .brief-content ul li {
+            list-style-type: none;
+            position: relative;
+        }
+
+        .brief-content ul li:before {
+            content: "•";
+            color: #FF9500;
+            font-weight: bold;
+            position: absolute;
+            left: -15px;
+        }
+
+        .brief-content ol li {
+            list-style-type: decimal;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .brief-content blockquote {
+            border-left: 3px solid #FF9500;
+            padding-left: 16px;
+            margin: 16px 0;
+            color: rgba(255, 255, 255, 0.7);
+            font-style: italic;
+        }
+
+        .brief-content code {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+            font-size: 12px;
+            color: #34C759;
+        }
+
+        .brief-content pre {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            padding: 12px;
+            margin: 12px 0;
+            overflow-x: auto;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .brief-content pre code {
+            background: none;
+            border: none;
+            padding: 0;
+            color: #34C759;
+        }
+
+        .brief-content hr {
+            border: none;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.2);
+            margin: 20px 0;
+        }
+
+        .brief-content a {
+            color: #007AFF;
+            text-decoration: none;
+        }
+
+        .brief-content a:hover {
+            text-decoration: underline;
+        }
+
+        /* Special styling for brief sections */
+        .brief-content .section-divider {
+            border: none;
+            height: 2px;
+            background: linear-gradient(to right, transparent, rgba(255, 149, 0, 0.3), transparent);
+            margin: 24px 0;
+        }
+
+        .brief-content .highlight {
+            background: rgba(255, 149, 0, 0.2);
+            border-left: 3px solid #FF9500;
+            padding: 8px 12px;
+            margin: 12px 0;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .result-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .result-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            padding: 8px 16px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .result-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .result-btn.primary {
+            background: rgba(255, 165, 0, 0.8);
+            border-color: rgba(255, 165, 0, 0.8);
+            color: white;
+        }
+
+        .result-btn.primary:hover {
+            background: rgba(255, 165, 0, 0.9);
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-bottom: 16px;
+        }
+
+        .empty-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 8px;
+        }
+
+        .empty-subtitle {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.6);
+            line-height: 1.4;
+            margin-bottom: 16px;
+        }
+
+        .add-clients-btn {
+            background: rgba(255, 165, 0, 0.8);
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            color: white;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .add-clients-btn:hover {
+            background: rgba(255, 165, 0, 0.9);
+        }
+
+        /* Responsive adjustments */
+        @media (max-height: 700px) {
+            .brief-panel {
+                height: 550px;
+                min-height: 400px;
+            }
+            
+            .client-list {
+                max-height: 180px;
+            }
+            
+            .brief-content {
+                height: 220px;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .brief-panel {
+                width: 360px;
+                min-width: 320px;
+            }
+            
+            .content {
+                padding: 12px;
+            }
+        }
+
+        /* Fix for potential layout issues */
+        * {
+            box-sizing: border-box;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="brief-panel" id="briefPanel">
+        <div class="header">
+            <div class="header-left">
+                <div class="header-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <g transform="translate(12, 12)">
+                            <!-- Top line (longest) -->
+                            <rect x="-10" y="-4" width="20" height="1.5" rx="0.75" fill="currentColor" opacity="1"/>
+                            
+                            <!-- Middle line -->
+                            <rect x="-7" y="-0.75" width="14" height="1.5" rx="0.75" fill="currentColor" opacity="0.9"/>
+                            
+                            <!-- Bottom line (shortest) -->
+                            <rect x="-4" y="2.5" width="8" height="1.5" rx="0.75" fill="currentColor" opacity="0.7"/>
+                        </g>
+                    </svg>
+                </div>
+                <div class="header-text">
+                    <div class="header-title">Meeting Brief</div>
+                    <div class="header-subtitle" id="headerSubtitle">Select client to generate brief</div>
+                </div>
+            </div>
+            <div class="header-buttons">
+                <button class="header-btn" onclick="toggleMinimize()">
+                    <span id="minimizeIcon">−</span>
+                </button>
+                <button class="header-btn" onclick="closeBrief()">×</button>
+            </div>
+        </div>
+
+        <div class="content" id="briefContent">
+            <div id="briefForm">
+                <!-- Client Selection Section -->
+                <div class="section">
+                    <div class="section-title">Client</div>
+                    <div class="client-list" id="clientList">
+                        <div class="empty-state">
+                            <div class="empty-icon">👥</div>
+                            <div class="empty-title">No clients found</div>
+                            <div class="empty-subtitle">Add clients in Settings to create meeting briefs</div>
+                            <button class="add-clients-btn" onclick="openSettings()">Add Clients</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Meeting Details Section -->
+                <div id="meetingDetailsSection" style="display: none;">
+                    <div class="section">
+                        <div class="section-title">Meeting Objective</div>
+                        <input type="text" class="form-input" id="meetingObjective"
+                            placeholder="Purpose of meeting">
+                    </div>
+
+                    <div class="section">
+                        <div class="section-title">Additional Notes</div>
+                        <textarea class="form-input form-textarea" id="meetingNotes"
+                            placeholder=""></textarea>
+                    </div>
+
+                    <div class="section">
+                        <div class="section-title">Meeting Topic</div>
+                        <div class="topic-row">
+                            <select class="form-input topic-select" id="topicSelect">
+                                <option value="General">General</option>
+                            </select>
+                            <button class="add-topic-btn" onclick="addNewTopic()">+</button>
+                        </div>
+                    </div>
+
+                    <!-- Follow-up Section -->
+                    <div id="followupField" style="display: none;">
+                        <div class="followup-section">
+                            <div class="followup-header">
+                                <div class="followup-toggle" onclick="toggleFollowup()">
+                                    <div class="toggle-switch" id="followupToggle">
+                                        <div class="toggle-knob"></div>
+                                    </div>
+                                    Follow-up meeting
+                                </div>
+                                <button class="view-previous-btn" onclick="togglePreviousBriefs()">View Previous</button>
+                            </div>
+                            <div class="followup-note" id="followupNote" style="display: none;">
+                                Will include context from previous meetings
+                            </div>
+                        </div>
+                        <div class="previous-briefs" id="previousBriefs" style="display: none;">
+                            <div style="font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.8); margin-bottom: 8px;">
+                                Previous Briefs</div>
+                            <div id="previousBriefsList"></div>
+                        </div>
+                    </div>
+
+                    <!-- Attachments Section -->
+                    <div class="section">
+                        <div class="attachments-header">
+                            <div class="section-title">Attachments</div>
+                            <button class="add-files-btn" onclick="selectFiles()">
+                                <span>+</span>
+                                <span>Add</span>
+                            </button>
+                        </div>
+                        <div id="fileDropContainer">
+                            <div class="file-drop-zone" onclick="selectFiles()" id="fileDropZone">
+                                <div class="drop-icon">📄</div>
+                                <div class="drop-text">Drop files or click to browse</div>
+                            </div>
+                            <div class="file-list" id="filesList"></div>
+                        </div>
+                    </div>
+
+                    <div class="generate-btn-container">
+                        <button class="generate-btn" id="generateBtn" onclick="generateBrief()" disabled>
+                            <div class="loading-spinner" id="loadingSpinner" style="display: none;"></div>
+                            <span>📄</span>
+                            <span id="generateText">Generate Brief</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Brief Result -->
+            <div class="brief-result" id="briefResult">
+                <div class="result-header">
+                    <div class="success-icon">✓</div>
+                    <div class="result-title">Brief Ready</div>
+                </div>
+                <div class="brief-content" id="briefContentText"></div>
+                <div class="result-actions">
+                    <button class="result-btn" onclick="newBrief()">New Brief</button>
+                    <button class="result-btn primary" onclick="copyBrief()">Copy Brief</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { ipcRenderer } = require('electron');
+        const AIConnectionManager = require('../services/AIConnectionManager');
+
+        let selectedClient = null;
+        let clients = [];
+        let aiConnection = null;
+        let generatedBrief = '';
+        let isMinimized = false;
+        let isFollowup = false;
+        let attachedFiles = [];
+        let showPreviousBriefs = false;
+
+        // Markdown to HTML converter for brief content
+        function convertMarkdownToHTML(markdown) {
+            if (!markdown) return '';
+            
+            let html = markdown
+                // Headers
+                .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                
+                // Bold text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                
+                // Italic text
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                
+                // Horizontal rules
+                .replace(/^---$/gim, '<hr class="section-divider">')
+                .replace(/^-{3,}$/gim, '<hr class="section-divider">')
+                
+                // Bullet points (handle nested levels)
+                .replace(/^\* (.*$)/gim, '<li>$1</li>')
+                .replace(/^- (.*$)/gim, '<li>$1</li>')
+                
+                // Line breaks and paragraphs
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/\n/g, '<br>');
+            
+            // Wrap in paragraph tags if not already wrapped
+            if (!html.startsWith('<h') && !html.startsWith('<li') && !html.startsWith('<p')) {
+                html = '<p>' + html + '</p>';
+            }
+            
+            // Wrap consecutive list items in ul tags
+            html = html.replace(/(<li>.*?<\/li>)(\s*<li>.*?<\/li>)*/g, function(match) {
+                return '<ul>' + match + '</ul>';
+            });
+            
+            // Clean up empty paragraphs
+            html = html.replace(/<p><\/p>/g, '');
+            html = html.replace(/<p><br><\/p>/g, '');
+            
+            return html;
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            initializeBrief();
+            initializeDragFunctionality();
+        });
+
+        // Listen for client updates from settings
+        ipcRenderer.on('clients-updated', () => {
+            console.log('Received clients-updated event');
+            setTimeout(() => loadClients(), 100);
+        });
+
+        async function initializeBrief() {
+            const { getInstance } = require('../services/AIConnectionManager');
+            aiConnection = getInstance();
+
+            aiConnection.on('responseComplete', () => {
+                completeBriefGeneration();
+            });
+
+            loadClients();
+        }
+
+        async function loadClients() {
+            try {
+                clients = await ipcRenderer.invoke('get-clients');
+                console.log('Loaded clients from IPC:', clients);
+            } catch (error) {
+                console.error('Failed to load clients:', error);
+                clients = [];
+            }
+            renderClients();
+        }
+
+        function initializeDragFunctionality() {
+            const panel = document.getElementById('briefPanel');
+            const header = panel.querySelector('.header');
+            let isDragging = false;
+            let dragStartX = 0;
+            let dragStartY = 0;
+            let panelStartX = 0;
+            let panelStartY = 0;
+
+            header.addEventListener('mousedown', (e) => {
+                // Only start drag if clicking on the header itself, not buttons
+                if (e.target.closest('.header-btn')) {
+                    return;
+                }
+                
+                isDragging = true;
+                dragStartX = e.clientX;
+                dragStartY = e.clientY;
+                
+                const rect = panel.getBoundingClientRect();
+                panelStartX = rect.left;
+                panelStartY = rect.top;
+                
+                header.style.cursor = 'grabbing';
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                
+                const deltaX = e.clientX - dragStartX;
+                const deltaY = e.clientY - dragStartY;
+                
+                const newX = panelStartX + deltaX;
+                const newY = panelStartY + deltaY;
+                
+                // Constrain to screen bounds
+                const maxX = window.innerWidth - panel.offsetWidth;
+                const maxY = window.innerHeight - panel.offsetHeight;
+                
+                const constrainedX = Math.max(0, Math.min(newX, maxX));
+                const constrainedY = Math.max(0, Math.min(newY, maxY));
+                
+                panel.style.left = constrainedX + 'px';
+                panel.style.top = constrainedY + 'px';
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isDragging) {
+                    isDragging = false;
+                    header.style.cursor = 'move';
+                }
+            });
+
+            // Handle window resize to keep panel in bounds
+            window.addEventListener('resize', () => {
+                const rect = panel.getBoundingClientRect();
+                const maxX = window.innerWidth - panel.offsetWidth;
+                const maxY = window.innerHeight - panel.offsetHeight;
+                
+                if (rect.left > maxX) {
+                    panel.style.left = maxX + 'px';
+                }
+                if (rect.top > maxY) {
+                    panel.style.top = maxY + 'px';
+                }
+            });
+        }
+
+        function renderClients() {
+            const clientList = document.getElementById('clientList');
+
+            if (clients.length === 0) {
+                clientList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">👥</div>
+                        <div class="empty-title">No clients added yet</div>
+                        <div class="empty-subtitle">Add clients in Settings to generate meeting briefs</div>
+                        <button class="add-clients-btn" onclick="openSettings()">Go to Settings</button>
+                    </div>
+                `;
+                return;
+            }
+
+            clientList.innerHTML = clients.map(client => `
+                <div class="client-card" onclick="selectClient('${client.id}')">
+                    <div class="client-avatar">
+                        ${client.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div class="client-info">
+                        <div class="client-name">${client.name}</div>
+                        <div class="client-company">${client.company}</div>
+                        ${client.industry ? `<div class="client-industry">${client.industry}</div>` : ''}
+                    </div>
+                    <span class="checkmark">✓</span>
+                </div>
+            `).join('');
+        }
+
+        function selectClient(clientId) {
+            selectedClient = clients.find(c => c.id === clientId);
+
+            // Update UI
+            document.querySelectorAll('.client-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.target.closest('.client-card').classList.add('selected');
+
+            // Update header subtitle
+            document.getElementById('headerSubtitle').textContent = `${selectedClient.name} • ${selectedClient.company}`;
+
+            // Show meeting details
+            document.getElementById('meetingDetailsSection').style.display = 'block';
+            document.getElementById('generateBtn').disabled = false;
+
+            // Show followup field if client has previous briefs
+            if (selectedClient.briefHistory && selectedClient.briefHistory.length > 0) {
+                document.getElementById('followupField').style.display = 'block';
+            } else {
+                document.getElementById('followupField').style.display = 'none';
+            }
+        }
+
+        function toggleFollowup() {
+            isFollowup = !isFollowup;
+            const toggle = document.getElementById('followupToggle');
+            const note = document.getElementById('followupNote');
+
+            if (isFollowup) {
+                toggle.classList.add('active');
+                note.style.display = 'block';
+            } else {
+                toggle.classList.remove('active');
+                note.style.display = 'none';
+            }
+        }
+
+        function togglePreviousBriefs() {
+            showPreviousBriefs = !showPreviousBriefs;
+            const previousBriefs = document.getElementById('previousBriefs');
+
+            if (showPreviousBriefs && selectedClient && selectedClient.briefHistory) {
+                previousBriefs.style.display = 'block';
+                renderPreviousBriefs();
+            } else {
+                previousBriefs.style.display = 'none';
+            }
+        }
+
+        function addNewTopic() {
+            const topicName = prompt('Enter a name for the new meeting topic:');
+            if (topicName && topicName.trim() && selectedClient) {
+                // Add topic to client (this would need to be implemented in the client manager)
+                const topicSelect = document.getElementById('topicSelect');
+                const option = document.createElement('option');
+                option.value = topicName.trim();
+                option.textContent = topicName.trim();
+                topicSelect.appendChild(option);
+                topicSelect.value = topicName.trim();
+            }
+        }
+
+        function renderPreviousBriefs() {
+            const briefsList = document.getElementById('previousBriefsList');
+            if (!selectedClient || !selectedClient.briefHistory) return;
+
+            const recentBriefs = selectedClient.briefHistory.slice(-3).reverse();
+            briefsList.innerHTML = recentBriefs.map(brief => `
+                <div class="previous-brief-card">
+                    <div class="brief-card-title">${brief.title}</div>
+                    <div class="brief-card-date">${new Date(brief.createdAt).toLocaleDateString()}</div>
+                </div>
+            `).join('');
+        }
+
+
+
+        function selectFiles() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.multiple = true;
+            input.accept = '.pdf,.doc,.docx,.txt,.rtf,.png,.jpg,.jpeg,.gif,.bmp';
+
+            input.onchange = (e) => {
+                Array.from(e.target.files).forEach(file => {
+                    // Check if file already exists
+                    if (!attachedFiles.find(f => f.name === file.name && f.size === file.size)) {
+                        attachedFiles.push({
+                            id: Date.now() + Math.random(),
+                            name: file.name,
+                            file: file,
+                            size: file.size,
+                            summary: getFileSummary(file)
+                        });
+                    }
+                });
+                renderFiles();
+            };
+
+            input.click();
+        }
+
+        function getFileSummary(file) {
+            if (file.type.startsWith('image/')) {
+                return 'Image file with visual context, charts, or diagrams relevant to the meeting';
+            } else if (file.type === 'application/pdf') {
+                return 'PDF document with content relevant to the meeting discussion';
+            } else if (file.type.includes('document') || file.type.includes('text')) {
+                return 'Document file with meeting-relevant content';
+            } else {
+                return 'File that may contain relevant information for the meeting';
+            }
+        }
+
+        function removeFile(fileId) {
+            attachedFiles = attachedFiles.filter(f => f.id !== fileId);
+            renderFiles();
+        }
+
+        // Add drag and drop functionality
+        document.addEventListener('DOMContentLoaded', function () {
+            const dropZone = document.getElementById('fileDropZone');
+
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, highlight, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, unhighlight, false);
+            });
+
+            function highlight(e) {
+                dropZone.classList.add('drag-over');
+            }
+
+            function unhighlight(e) {
+                dropZone.classList.remove('drag-over');
+            }
+
+            dropZone.addEventListener('drop', handleDrop, false);
+
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+
+                Array.from(files).forEach(file => {
+                    if (!attachedFiles.find(f => f.name === file.name && f.size === file.size)) {
+                        attachedFiles.push({
+                            id: Date.now() + Math.random(),
+                            name: file.name,
+                            file: file,
+                            size: file.size,
+                            summary: getFileSummary(file)
+                        });
+                    }
+                });
+                renderFiles();
+            }
+        });
+
+        function renderFiles() {
+            const filesList = document.getElementById('filesList');
+            const dropZone = document.getElementById('fileDropZone');
+
+            if (attachedFiles.length === 0) {
+                filesList.innerHTML = '';
+                dropZone.style.display = 'flex';
+                return;
+            }
+
+            dropZone.style.display = 'none';
+            filesList.innerHTML = attachedFiles.map(file => `
+                <div class="file-item">
+                    <div class="file-icon">${getFileIcon(file.name)}</div>
+                    <div class="file-info">
+                        <div class="file-name">${file.name}</div>
+                        <div class="file-summary">${file.summary}</div>
+                    </div>
+                    <button class="remove-file-btn" onclick="removeFile('${file.id}')">×</button>
+                </div>
+            `).join('') + `
+                <button class="add-more-files" onclick="selectFiles()">
+                    <span style="color: rgba(0, 122, 255, 0.8);">+</span>
+                    <span>Add more files</span>
+                </button>
+            `;
+        }
+
+        function getFileIcon(fileName) {
+            const ext = fileName.split('.').pop().toLowerCase();
+            if (['jpg', 'jpeg', 'png', 'gif', 'bmp'].includes(ext)) {
+                return '🖼️';
+            } else if (ext === 'pdf') {
+                return '📄';
+            } else if (['doc', 'docx'].includes(ext)) {
+                return '📝';
+            } else if (['txt', 'rtf'].includes(ext)) {
+                return '📄';
+            }
+            return '📎';
+        }
+
+        function removeFile(fileId) {
+            attachedFiles = attachedFiles.filter(f => f.id !== fileId);
+            renderFiles();
+        }
+
+        async function generateBrief() {
+            if (!selectedClient) return;
+
+            console.log('🚀 Starting brief generation...');
+
+            // Check beta usage limits first
+            try {
+                const BetaUsageManager = require('../services/BetaUsageManager');
+                await BetaUsageManager.enforceLimit('briefs', 1);
+                console.log('✅ Beta limit check passed for brief generation');
+            } catch (error) {
+                if (error.code === 'BETA_LIMIT_EXCEEDED') {
+                    console.log('❌ Beta limit exceeded for briefs');
+                    BetaUsageManager.showLimitExceededDialog('briefs', error.usage);
+                    return;
+                }
+                console.error('Error checking beta limits:', error);
+            }
+            console.log('Selected client:', selectedClient.name);
+
+            const objective = document.getElementById('meetingObjective').value.trim();
+            const notes = document.getElementById('meetingNotes').value.trim();
+
+            console.log('Objective:', objective);
+            console.log('Notes:', notes);
+
+            // Update UI
+            document.getElementById('generateText').textContent = 'Generating Brief...';
+            document.getElementById('loadingSpinner').style.display = 'block';
+            document.getElementById('generateBtn').disabled = true;
+
+            // Build previous context if follow-up is enabled
+            let previousContext = '';
+            if (isFollowup && selectedClient.briefHistory && selectedClient.briefHistory.length > 0) {
+                const recentBriefs = selectedClient.briefHistory.slice(-3);
+                previousContext = `\n\nPREVIOUS MEETING CONTEXT:\n${recentBriefs.map(b => `- ${b.objective}: ${b.content.substring(0, 200)}...`).join('\n')}\n`;
+            }
+
+            // Build file context
+            let fileContext = '';
+            if (attachedFiles.length > 0) {
+                fileContext = `\n\nATTACHED FILES:\n${attachedFiles.map(f => `- ${f.name}: ${f.summary}`).join('\n')}\n`;
+            }
+
+            const briefPrompt = `
+Generate a comprehensive meeting brief for the following:
+
+Client: ${selectedClient.name} from ${selectedClient.company}
+Industry: ${selectedClient.industry || 'Not specified'}
+Meeting Objective: ${objective}
+Additional Notes: ${notes}
+Client Background: ${selectedClient.notes || 'No additional background'}${previousContext}${fileContext}
+
+Based on the information provided, please provide:
+1. Meeting preparation points
+2. Key topics to discuss
+3. Questions to ask
+4. Potential challenges or opportunities
+5. Follow-up actions to consider
+
+Format as a professional meeting brief.
+            `.trim();
+
+            try {
+                // Clear any previous messages
+                aiConnection.clearConversation();
+                
+                // Set up timeout as backup
+                const timeout = setTimeout(() => {
+                    console.log('Brief generation timeout - forcing completion');
+                    completeBriefGeneration();
+                }, 30000); // 30 second timeout
+
+                // Clear timeout when response completes
+                aiConnection.once('responseComplete', () => {
+                    clearTimeout(timeout);
+                });
+
+                await aiConnection.sendMessage(briefPrompt);
+            } catch (error) {
+                console.error('Failed to generate brief:', error);
+                document.getElementById('generateText').textContent = 'Generate Brief';
+                document.getElementById('loadingSpinner').style.display = 'none';
+                document.getElementById('generateBtn').disabled = false;
+                alert('Failed to generate brief. Please try again.');
+            }
+        }
+
+        async function completeBriefGeneration() {
+            console.log('Completing brief generation...');
+            
+            // Get the response from the AI connection
+            let response = '';
+            if (aiConnection.lastMessages && aiConnection.lastMessages.length > 0) {
+                const lastMessage = aiConnection.lastMessages[aiConnection.lastMessages.length - 1];
+                if (!lastMessage.isUser) {
+                    response = lastMessage.message;
+                }
+            }
+            
+            // Fallback to messageStream if lastMessages is empty
+            if (!response && aiConnection.messageStream) {
+                response = aiConnection.messageStream;
+            }
+
+            if (!response) {
+                console.error('No response received from AI');
+                document.getElementById('generateText').textContent = 'Generate Brief';
+                document.getElementById('loadingSpinner').style.display = 'none';
+                document.getElementById('generateBtn').disabled = false;
+                alert('Failed to generate brief. Please try again.');
+                return;
+            }
+
+            generatedBrief = response;
+
+            // Reset UI
+            document.getElementById('generateText').textContent = 'Generate Brief';
+            document.getElementById('loadingSpinner').style.display = 'none';
+            document.getElementById('generateBtn').disabled = false;
+
+            if (generatedBrief && selectedClient) {
+                const objective = document.getElementById('meetingObjective').value.trim();
+
+                const brief = {
+                    id: Date.now().toString(),
+                    title: objective || 'Meeting Brief',
+                    objective: objective,
+                    content: generatedBrief,
+                    topic: 'General',
+                    isFollowUp: isFollowup,
+                    createdAt: new Date()
+                };
+
+                // Add to client's brief history via IPC
+                try {
+                    await ipcRenderer.invoke('add-brief-to-client', selectedClient.id, brief);
+                    // Update local client data
+                    if (!selectedClient.briefHistory) {
+                        selectedClient.briefHistory = [];
+                    }
+                    selectedClient.briefHistory.push(brief);
+                } catch (error) {
+                    console.error('Failed to save brief to client:', error);
+                }
+            }
+
+            // Show result
+            document.getElementById('briefForm').style.display = 'none';
+            document.getElementById('briefResult').classList.add('visible');
+            document.getElementById('briefContentText').innerHTML = convertMarkdownToHTML(generatedBrief);
+        }
+
+        function toggleMinimize() {
+            isMinimized = !isMinimized;
+            const panel = document.getElementById('briefPanel');
+            const icon = document.getElementById('minimizeIcon');
+            const content = document.getElementById('briefContent');
+
+            if (isMinimized) {
+                panel.style.height = '56px';
+                content.style.display = 'none';
+                icon.textContent = '⌃';
+            } else {
+                panel.style.height = '680px';
+                content.style.display = 'flex';
+                icon.textContent = '−';
+            }
+        }
+
+        function newBrief() {
+            // Reset everything
+            document.getElementById('briefForm').style.display = 'block';
+            document.getElementById('briefResult').classList.remove('visible');
+            document.getElementById('meetingObjective').value = '';
+            document.getElementById('meetingNotes').value = '';
+            attachedFiles = [];
+            renderFiles();
+            generatedBrief = '';
+            selectedClient = null;
+            isFollowup = false;
+            showPreviousBriefs = false;
+
+            // Reset UI
+            document.querySelectorAll('.client-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.getElementById('meetingDetailsSection').style.display = 'none';
+            document.getElementById('followupField').style.display = 'none';
+            document.getElementById('generateBtn').disabled = true;
+
+            // Reset follow-up toggle
+            const toggle = document.getElementById('followupToggle');
+            const note = document.getElementById('followupNote');
+            const previousBriefs = document.getElementById('previousBriefs');
+            toggle.classList.remove('active');
+            note.style.display = 'none';
+            previousBriefs.style.display = 'none';
+        }
+
+        function copyBrief() {
+            navigator.clipboard.writeText(generatedBrief).then(() => {
+                // Visual feedback
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy brief:', err);
+                alert('Failed to copy brief to clipboard');
+            });
+        }
+
+        function closeBrief() {
+            ipcRenderer.send('close-brief-panel');
+        }
+
+        function openSettings() {
+            ipcRenderer.send('show-settings');
+        }
+    </script>
+</body>
+
+</html>

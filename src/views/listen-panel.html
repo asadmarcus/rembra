@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: transparent;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        .listen-panel {
+            width: 280px;
+            height: 320px;
+            background: rgba(15, 15, 15, 0.85);
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.7),
+                0 8px 16px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.15),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: fixed;
+            top: 50px;
+            left: 50px;
+            user-select: none;
+        }
+
+        .listen-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.1) 0%, 
+                rgba(255, 255, 255, 0.05) 50%, 
+                rgba(0, 0, 0, 0.1) 100%);
+            border-radius: 20px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .listen-panel > * {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Enhanced Header */
+        .header {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px 20px 0 0;
+            cursor: move;
+            -webkit-app-region: drag;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .record-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 13px;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.305), rgba(41, 53, 46, 0.7));
+            color: white;
+            box-shadow: 0 3px 12px rgba(34, 189, 197, 0.4);
+            position: relative;
+            -webkit-app-region: no-drag;
+        }
+
+        .record-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 16px rgba(123, 231, 255, 0.5);
+        }
+
+        .record-btn.recording {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.9), rgba(239, 68, 68, 0.7));
+            box-shadow: 0 3px 12px rgba(239, 68, 68, 0.4);
+            animation: pulse 2s infinite;
+        }
+
+        .record-btn.recording:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 16px rgba(239, 68, 68, 0.5);
+        }
+
+        @keyframes pulse {
+            0%, 100% { 
+                transform: scale(1);
+                box-shadow: 0 3px 12px rgba(239, 68, 68, 0.4), 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+            50% { 
+                transform: scale(1.02);
+                box-shadow: 0 4px 16px rgba(239, 68, 68, 0.5), 0 0 0 4px rgba(239, 68, 68, 0.3);
+            }
+        }
+
+        .listening-indicator {
+            font-size: 13px;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .listening-indicator.recording {
+            color: #ef4444;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 6px;
+        }
+
+        .header-btn {
+            width: 24px;
+            height: 24px;
+            border: none;
+            background: rgba(255, 255, 255, 0.05);
+            color: #94a3b8;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            font-size: 12px;
+            -webkit-app-region: no-drag;
+        }
+
+        .header-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+
+        /* Audio Visualization */
+        .audio-viz {
+            display: flex;
+            align-items: center;
+            gap: 1px;
+            margin-left: auto;
+            height: 20px;
+            padding: 0 8px;
+        }
+
+        .viz-bar {
+            width: 1.5px;
+            background: rgba(34, 197, 94, 0.4);
+            border-radius: 1px;
+            transition: all 0.1s ease;
+        }
+
+        .viz-bar.active {
+            background: rgba(34, 197, 94, 0.8);
+        }
+
+        /* Main Content */
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .transcript-container {
+            flex: 1;
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            padding: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            min-height: 200px;
+            max-height: 200px;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE and Edge */
+        }
+
+        .transcript-container::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+            width: 0;
+            height: 0;
+        }
+
+        /* Empty State */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            color: #64748b;
+            gap: 12px;
+            font-size: 13px;
+            font-weight: 400;
+            animation: pulse-text 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-text {
+            0%, 100% { 
+                opacity: 0.6; 
+                transform: scale(1);
+            }
+            50% { 
+                opacity: 1; 
+                transform: scale(1.02);
+            }
+        }
+
+        /* Transcript Messages */
+        .transcript-message {
+            margin-bottom: 16px;
+            animation: fadeInUp 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .transcript-message.user {
+            align-items: flex-end;
+        }
+
+        .transcript-message.other {
+            align-items: flex-start;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .transcript-message.user .message-header {
+            flex-direction: row-reverse;
+        }
+
+        .speaker-avatar {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(59, 130, 246, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 600;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .speaker-avatar.speaker-2 {
+            background: rgba(168, 85, 247, 0.8);
+        }
+
+        .speaker-avatar.speaker-3 {
+            background: rgba(34, 197, 94, 0.8);
+        }
+
+        .speaker-avatar.user {
+            background: rgba(34, 197, 94, 0.8);
+        }
+
+        .speaker-name {
+            font-size: 11px;
+            font-weight: 600;
+            color: #94a3b8;
+        }
+
+        .message-time {
+            font-size: 10px;
+            color: #64748b;
+            margin-left: auto;
+        }
+
+        .transcript-message.user .message-time {
+            margin-left: 0;
+            margin-right: auto;
+        }
+
+        .message-content {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 10px 12px;
+            font-size: 13px;
+            line-height: 1.5;
+            color: #e2e8f0;
+            max-width: 85%;
+            position: relative;
+        }
+
+        .transcript-message.user .message-content {
+            background: rgba(34, 197, 94, 0.1);
+            border-color: rgba(34, 197, 94, 0.3);
+            border-radius: 12px 12px 4px 12px;
+        }
+
+        .transcript-message.other .message-content {
+            border-radius: 12px 12px 12px 4px;
+        }
+
+        .message-content.partial {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: rgba(245, 158, 11, 0.3);
+            opacity: 0.8;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Minimized State */
+        .listen-panel.minimized {
+            height: 80px;
+        }
+
+        .listen-panel.minimized .content {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="listen-panel" id="listenPanel">
+        <div class="header">
+            <div class="header-content">
+                <button class="record-btn idle" id="recordBtn">
+                    <span id="recordIcon">▶</span>
+                </button>
+                <div class="listening-indicator" id="listeningIndicator">
+                    Ready to record
+                </div>
+                <div class="audio-viz" id="audioViz">
+                    <!-- Audio visualization bars -->
+                </div>
+            </div>
+            <div class="header-buttons">
+                <button class="header-btn" id="minimizeBtn">
+                    <span id="minimizeIcon">⌄</span>
+                </button>
+                <button class="header-btn" id="closeBtn">×</button>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="transcript-container" id="transcriptContainer">
+                <div class="empty-state">
+                    Waiting for transcription
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { ipcRenderer } = require('electron');
+        
+        let isRecording = false;
+        let isMinimized = false;
+        let startTime = null;
+        let durationInterval = null;
+        let currentTranscript = [];
+        let speakers = new Set();
+        let transcriptionService = null;
+        let audioVizInterval = null;
+        let speakerColors = ['#3b82f6', '#a855f7', '#22c55e', '#f59e0b', '#ef4444'];
+        let currentMeetingContext = null; // Store meeting context for auto-recording
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎤 Listen panel loaded, initializing...');
+            
+            // Initialize audio visualization
+            initializeAudioViz();
+            
+            // Initialize transcription service
+            initializeListen();
+            
+            // Set up UI event listeners
+            setupEventListeners();
+            
+            // Initialize drag functionality
+            initializeDragFunctionality();
+            
+            // Initialize UI state
+            updateListeningIndicator('Ready to record', false);
+            updateRecordButton();
+        });
+
+        function initializeAudioViz() {
+            const audioViz = document.getElementById('audioViz');
+            
+            // Create 12 visualization bars for clean minimal look
+            for (let i = 0; i < 12; i++) {
+                const bar = document.createElement('div');
+                bar.className = 'viz-bar';
+                bar.style.height = '2px';
+                audioViz.appendChild(bar);
+            }
+        }
+
+        function setupEventListeners() {
+            const minimizeBtn = document.getElementById('minimizeBtn');
+            if (minimizeBtn) {
+                minimizeBtn.addEventListener('click', toggleMinimize);
+            }
+            
+            const closeBtn = document.getElementById('closeBtn');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', closeListen);
+            }
+            
+            const recordBtn = document.getElementById('recordBtn');
+            if (recordBtn) {
+                recordBtn.addEventListener('click', toggleRecording);
+            }
+        }
+
+        function initializeDragFunctionality() {
+            const panel = document.getElementById('listenPanel');
+            const header = panel.querySelector('.header');
+            let isDragging = false;
+            let dragStartX = 0;
+            let dragStartY = 0;
+            let panelStartX = 0;
+            let panelStartY = 0;
+
+            header.addEventListener('mousedown', (e) => {
+                // Only start drag if clicking on the header itself, not buttons
+                if (e.target.closest('.record-btn') || e.target.closest('.header-btn')) {
+                    return;
+                }
+                
+                isDragging = true;
+                dragStartX = e.clientX;
+                dragStartY = e.clientY;
+                
+                const rect = panel.getBoundingClientRect();
+                panelStartX = rect.left;
+                panelStartY = rect.top;
+                
+                header.style.cursor = 'grabbing';
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                
+                const deltaX = e.clientX - dragStartX;
+                const deltaY = e.clientY - dragStartY;
+                
+                const newX = panelStartX + deltaX;
+                const newY = panelStartY + deltaY;
+                
+                // Constrain to screen bounds
+                const maxX = window.innerWidth - panel.offsetWidth;
+                const maxY = window.innerHeight - panel.offsetHeight;
+                
+                const constrainedX = Math.max(0, Math.min(newX, maxX));
+                const constrainedY = Math.max(0, Math.min(newY, maxY));
+                
+                panel.style.left = constrainedX + 'px';
+                panel.style.top = constrainedY + 'px';
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isDragging) {
+                    isDragging = false;
+                    header.style.cursor = 'move';
+                }
+            });
+
+            // Handle window resize to keep panel in bounds
+            window.addEventListener('resize', () => {
+                const rect = panel.getBoundingClientRect();
+                const maxX = window.innerWidth - panel.offsetWidth;
+                const maxY = window.innerHeight - panel.offsetHeight;
+                
+                if (rect.left > maxX) {
+                    panel.style.left = maxX + 'px';
+                }
+                if (rect.top > maxY) {
+                    panel.style.top = maxY + 'px';
+                }
+            });
+        }
+
+        function startAudioVisualization() {
+            const bars = document.querySelectorAll('.viz-bar');
+            
+            audioVizInterval = setInterval(() => {
+                bars.forEach((bar, index) => {
+                    const height = Math.random() * 8 + 2; // Random height between 2-10px
+                    const isActive = Math.random() > 0.6; // 40% chance to be active
+                    
+                    bar.style.height = height + 'px';
+                    
+                    if (isActive) {
+                        bar.classList.add('active');
+                    } else {
+                        bar.classList.remove('active');
+                    }
+                });
+            }, 150);
+        }
+
+        function stopAudioVisualization() {
+            if (audioVizInterval) {
+                clearInterval(audioVizInterval);
+                audioVizInterval = null;
+            }
+            
+            // Reset all bars to default state
+            const bars = document.querySelectorAll('.viz-bar');
+            bars.forEach(bar => {
+                bar.style.height = '2px';
+                bar.classList.remove('active');
+            });
+        }
+
+        function setupTranscriptionEventListeners() {
+            if (!transcriptionService) return;
+
+            transcriptionService.on('started', (sessionId) => {
+                updateListeningIndicator('Listening for audio', true);
+                startAudioVisualization();
+                clearTranscriptUI();
+                startTime = Date.now(); // Track session start time
+                console.log('🎤 Recording session started at:', new Date(startTime).toLocaleString());
+            });
+
+            transcriptionService.on('partial', (data) => {
+                updatePartialTranscript(data);
+            });
+
+            transcriptionService.on('final', (data) => {
+                addFinalTranscript(data);
+                speakers.add(data.speaker);
+                
+                // Ensure we're saving the transcript data with proper format
+                const transcriptEntry = {
+                    speaker: data.speaker || 'Unknown',
+                    text: data.text || '',
+                    timestamp: Date.now(),
+                    time: new Date().toLocaleTimeString()
+                };
+                currentTranscript.push(transcriptEntry);
+                
+                console.log('📝 Final transcript added:', transcriptEntry);
+                console.log('📋 Current transcript length:', currentTranscript.length);
+            });
+
+            transcriptionService.on('turnEnd', (data) => {
+                console.log('🔄 Turn ended:', data.speaker, data.text);
+                addTurnEndIndicator(data);
+            });
+
+            transcriptionService.on('stopped', (session) => {
+                updateListeningIndicator('Session saved', false);
+                stopAudioVisualization();
+                saveSession(session);
+            });
+
+            transcriptionService.on('error', (error) => {
+                console.error('Transcription error:', error);
+                updateListeningIndicator('Recording error', false);
+                
+                if (isRecording) {
+                    isRecording = false;
+                    updateRecordButton();
+                    stopAudioVisualization();
+                }
+            });
+
+            transcriptionService.on('disconnected', () => {
+                updateListeningIndicator('Disconnected', false);
+                stopAudioVisualization();
+            });
+        }
+
+        async function initializeListen() {
+            try {
+                console.log('🔍 Initializing transcription service...');
+                
+                // Try Enhanced first, fallback to basic TranscriptionService
+                try {
+                    const EnhancedTranscriptionService = require('../services/EnhancedTranscriptionService');
+                    transcriptionService = new EnhancedTranscriptionService();
+                    console.log('🔍 EnhancedTranscriptionService loaded and instantiated');
+                } catch (enhancedError) {
+                    console.warn('⚠️ Enhanced service failed, using basic:', enhancedError.message);
+                    transcriptionService = require('../services/TranscriptionService');
+                    console.log('🔍 Basic TranscriptionService loaded (singleton)');
+                }
+                
+                console.log('🔍 Transcription service instance created:', !!transcriptionService);
+                
+                // Verify the service has required methods
+                if (!transcriptionService || typeof transcriptionService.setApiKey !== 'function') {
+                    throw new Error('Transcription service missing required methods');
+                }
+                
+                try {
+                    const assemblyAIConfig = require('../config/assemblyai');
+                    console.log('🔍 AssemblyAI config loaded:', !!assemblyAIConfig.apiKey);
+                    
+                    if (!assemblyAIConfig.apiKey) {
+                        throw new Error('AssemblyAI API key not found in config');
+                    }
+                    
+                    transcriptionService.setApiKey(assemblyAIConfig.apiKey);
+                    console.log('✅ Transcription service initialized successfully');
+                } catch (error) {
+                    console.error('❌ Failed to load API key:', error);
+                    updateListeningIndicator('API key error', false);
+                    return;
+                }
+            } catch (error) {
+                console.error('❌ Failed to initialize transcription service:', error);
+                console.error('❌ Error details:', error.message, error.stack);
+                updateListeningIndicator('Initialization failed', false);
+                return;
+            }
+
+            setupTranscriptionEventListeners();
+        }
+
+        async function toggleRecording() {
+            console.log('🎤 Toggle recording clicked, current state:', isRecording);
+            
+            if (!transcriptionService) {
+                console.error('❌ Transcription service not initialized');
+                alert('Transcription service not available. Please restart the app.');
+                return;
+            }
+
+            try {
+                if (!isRecording) {
+                    await startRecording();
+                } else {
+                    await stopRecording();
+                }
+            } catch (error) {
+                console.error('❌ Error toggling recording:', error);
+                const errorMessage = error?.message || error?.toString() || 'Unknown error';
+                alert('Error: ' + errorMessage);
+            }
+        }
+
+        async function startRecording() {
+            console.log('🎤 Starting recording...');
+            
+            if (!transcriptionService) {
+                console.error('❌ Transcription service not initialized');
+                alert('Transcription service not available. Please restart the app.');
+                return;
+            }
+
+            // Check beta usage limits for transcription
+            try {
+                const BetaUsageManager = require('../services/BetaUsageManager');
+                const check = BetaUsageManager.checkLimit('transcription', 5); // Check for 5 minutes
+                
+                if (!check.allowed) {
+                    console.log('❌ Beta limit would be exceeded for transcription');
+                    BetaUsageManager.showLimitExceededDialog('transcription', check);
+                    return;
+                }
+                console.log('✅ Beta limit check passed for transcription');
+            } catch (error) {
+                console.error('Error checking beta limits:', error);
+            }
+            
+            try {
+                await transcriptionService.startTranscription();
+                
+                isRecording = true;
+                updateRecordButton();
+                console.log('✅ Recording started successfully');
+                
+            } catch (error) {
+                console.error('❌ Failed to start recording:', error);
+                const errorMessage = error?.message || error?.toString() || 'Unknown error';
+                throw error;
+            }
+        }
+
+        async function stopRecording() {
+            console.log('🎤 Stopping recording...');
+            
+            try {
+                const session = await transcriptionService.stopTranscription();
+                
+                isRecording = false;
+                updateRecordButton();
+                
+                console.log('Recording stopped successfully, session:', session);
+                
+                // Clear meeting context after recording stops
+                if (currentMeetingContext) {
+                    console.log('Clearing meeting context:', currentMeetingContext.title);
+                    currentMeetingContext = null;
+                    
+                    // Reset status to default
+                    const statusElement = document.querySelector('.status');
+                    if (statusElement) {
+                        statusElement.textContent = 'Ready to record';
+                        statusElement.style.color = '#94a3b8';
+                    }
+                    
+                    // Notify main process that meeting session ended
+                    if (ipcRenderer) {
+                        ipcRenderer.invoke('end-meeting-session');
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Failed to stop recording:', error);
+                
+                isRecording = false;
+                updateRecordButton();
+                
+                // Clear meeting context on error too
+                if (currentMeetingContext) {
+                    currentMeetingContext = null;
+                }
+            }
+        }
+
+        function updateListeningIndicator(text, isRecording) {
+            const indicator = document.getElementById('listeningIndicator');
+            indicator.textContent = text;
+            
+            if (isRecording) {
+                indicator.classList.add('recording');
+            } else {
+                indicator.classList.remove('recording');
+            }
+        }
+
+        function updateRecordButton() {
+            const btn = document.getElementById('recordBtn');
+            const icon = document.getElementById('recordIcon');
+            
+            if (isRecording) {
+                btn.classList.remove('idle');
+                btn.classList.add('recording');
+                icon.textContent = '⏸';
+            } else {
+                btn.classList.remove('recording');
+                btn.classList.add('idle');
+                icon.textContent = '▶';
+            }
+        }
+
+        function clearTranscriptUI() {
+            currentTranscript = [];
+            speakers.clear();
+            const container = document.getElementById('transcriptContainer');
+            container.innerHTML = '<div class="empty-state">Waiting for transcription</div>';
+        }
+
+        function updatePartialTranscript(data) {
+            const container = document.getElementById('transcriptContainer');
+            
+            // Remove empty state if present
+            const emptyState = container.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.remove();
+            }
+            
+            // Only update if text is meaningful
+            if (!data.text || data.text.trim().length < 3) return;
+            
+            let partialElement = container.querySelector('.transcript-message.partial');
+            if (!partialElement) {
+                partialElement = document.createElement('div');
+                const isUser = data.speaker === 'You' || data.speaker === 'Speaker A';
+                partialElement.className = `transcript-message partial ${isUser ? 'user' : 'other'}`;
+                container.appendChild(partialElement);
+            }
+            
+            const isUser = data.speaker === 'You' || data.speaker === 'Speaker A';
+            const speakerClass = isUser ? 'user' : `speaker-${Math.min(Array.from(speakers).indexOf(data.speaker) + 1, 3)}`;
+            
+            partialElement.innerHTML = `
+                <div class="message-header">
+                    <div class="speaker-avatar ${speakerClass}">${data.speaker.charAt(0)}</div>
+                    <div class="speaker-name">${data.speaker}</div>
+                    <div class="message-time">${new Date().toLocaleTimeString()}</div>
+                </div>
+                <div class="message-content partial">${data.text}</div>
+            `;
+            
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function addFinalTranscript(data) {
+            const container = document.getElementById('transcriptContainer');
+            
+            // Remove empty state if present
+            const emptyState = container.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.remove();
+            }
+            
+            // Remove partial element
+            const partialElement = container.querySelector('.transcript-message.partial');
+            if (partialElement) {
+                partialElement.remove();
+            }
+            
+            const finalElement = document.createElement('div');
+            const isUser = data.speaker === 'You' || data.speaker === 'Speaker A';
+            finalElement.className = `transcript-message final ${isUser ? 'user' : 'other'}`;
+            
+            const speakerClass = isUser ? 'user' : `speaker-${Math.min(Array.from(speakers).indexOf(data.speaker) + 1, 3)}`;
+            
+            finalElement.innerHTML = `
+                <div class="message-header">
+                    <div class="speaker-avatar ${speakerClass}">${data.speaker.charAt(0)}</div>
+                    <div class="speaker-name">${data.speaker}</div>
+                    <div class="message-time">${new Date().toLocaleTimeString()}</div>
+                </div>
+                <div class="message-content">${data.text}</div>
+            `;
+            
+            container.appendChild(finalElement);
+            container.scrollTop = container.scrollHeight;
+            
+            // Don't add to currentTranscript here since we're doing it in the event listener
+            console.log('🎨 Final transcript element added to UI');
+        }
+
+        function addTurnEndIndicator(data) {
+            const container = document.getElementById('transcriptContainer');
+            
+            // Add a subtle turn separator
+            const separator = document.createElement('div');
+            separator.className = 'turn-separator';
+            separator.innerHTML = `
+                <div style="text-align: center; color: rgba(255, 255, 255, 0.3); font-size: 11px; margin: 12px 0; padding: 8px 0; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                    ── Turn ended ──
+                </div>
+            `;
+            
+            container.appendChild(separator);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        async function saveSession(session) {
+            try {
+                // Create detailed session data
+                const sessionData = {
+                    id: Date.now(),
+                    startTime: startTime || Date.now(),
+                    endTime: Date.now(),
+                    transcript: currentTranscript,
+                    speakers: Array.from(speakers),
+                    duration: startTime ? Date.now() - startTime : 0,
+                    summary: currentTranscript.length > 0 ? 
+                        currentTranscript.map(t => `${t.speaker}: ${t.text}`).join('\n') : 
+                        'No transcript available',
+                    wordCount: currentTranscript.reduce((count, item) => 
+                        count + (item.text ? item.text.split(' ').length : 0), 0),
+                    date: new Date().toISOString(),
+                    title: currentMeetingContext?.title || 
+                        (currentTranscript.length > 0 ? 
+                            currentTranscript[0].text.substring(0, 50) + '...' : 
+                            'Empty Session'),
+                    // Meeting context if available
+                    meetingContext: currentMeetingContext ? {
+                        platform: currentMeetingContext.platform,
+                        meetingUrl: currentMeetingContext.meetingUrl,
+                        participants: currentMeetingContext.participants,
+                        originalTitle: currentMeetingContext.title
+                    } : null
+                };
+                
+                // Save to localStorage with detailed format
+                const existingSessions = JSON.parse(localStorage.getItem('transcription_sessions') || '[]');
+                existingSessions.push(sessionData);
+                localStorage.setItem('transcription_sessions', JSON.stringify(existingSessions));
+                
+                // Also save to a separate key for settings panel compatibility
+                const clientSessions = JSON.parse(localStorage.getItem('client_sessions') || '[]');
+                const clientSessionData = {
+                    id: sessionData.id,
+                    date: new Date().toLocaleDateString(),
+                    time: new Date().toLocaleTimeString(),
+                    duration: Math.floor(sessionData.duration / 1000) + 's',
+                    speakers: sessionData.speakers.length,
+                    transcript: sessionData.summary,
+                    wordCount: sessionData.wordCount,
+                    client: currentMeetingContext ? 
+                        `${currentMeetingContext.platform} Meeting` : 
+                        'Recording Session',
+                    platform: currentMeetingContext?.platform || null
+                };
+                clientSessions.push(clientSessionData);
+                localStorage.setItem('client_sessions', JSON.stringify(clientSessions));
+                
+                // Notify main process about new session
+                if (ipcRenderer) {
+                    ipcRenderer.send('session-saved', sessionData);
+                }
+                
+                console.log('✅ Session saved successfully:', sessionData);
+                console.log('📊 Session details:', {
+                    transcript: currentTranscript,
+                    speakers: Array.from(speakers),
+                    duration: sessionData.duration
+                });
+
+                // Track transcription usage for beta limits
+                try {
+                    const BetaUsageManager = require('../services/BetaUsageManager');
+                    const durationMinutes = Math.ceil(sessionData.duration / (1000 * 60));
+                    BetaUsageManager.incrementUsage('transcription', durationMinutes);
+                    console.log(`📈 Transcription usage tracked: ${durationMinutes} minutes`);
+                } catch (error) {
+                    console.error('Error tracking transcription usage:', error);
+                }
+
+                // Generate AI summary automatically
+                if (sessionData.summary && sessionData.summary !== 'No transcript available') {
+                    try {
+                        console.log('🤖 Auto-generating AI summary for session...');
+                        
+                        const summaryResult = await ipcRenderer.invoke('generate-ai-summary', {
+                            transcript: sessionData.summary,
+                            sessionId: sessionData.id,
+                            metadata: {
+                                duration: sessionData.duration,
+                                speakerCount: sessionData.speakers.length,
+                                wordCount: sessionData.wordCount,
+                                startTime: sessionData.startTime
+                            }
+                        });
+
+                        if (summaryResult && summaryResult.summary) {
+                            // Update the session with the AI summary
+                            sessionData.aiSummary = summaryResult.summary;
+                            sessionData.summaryGeneratedAt = Date.now();
+                            
+                            // Update stored sessions with AI summary
+                            const updatedSessions = JSON.parse(localStorage.getItem('transcription_sessions') || '[]');
+                            const sessionIndex = updatedSessions.findIndex(s => s.id === sessionData.id);
+                            if (sessionIndex !== -1) {
+                                updatedSessions[sessionIndex] = sessionData;
+                                localStorage.setItem('transcription_sessions', JSON.stringify(updatedSessions));
+                            }
+
+                            // Also update client_sessions
+                            const updatedClientSessions = JSON.parse(localStorage.getItem('client_sessions') || '[]');
+                            const clientSessionIndex = updatedClientSessions.findIndex(s => s.id === sessionData.id);
+                            if (clientSessionIndex !== -1) {
+                                updatedClientSessions[clientSessionIndex].aiSummary = summaryResult.summary;
+                                updatedClientSessions[clientSessionIndex].summaryGeneratedAt = Date.now();
+                                localStorage.setItem('client_sessions', JSON.stringify(updatedClientSessions));
+                            }
+
+                            console.log('✅ AI summary generated and saved:', summaryResult.summary);
+                        } else {
+                            console.warn('⚠️ AI summary generation returned no result');
+                        }
+                    } catch (error) {
+                        console.error('❌ Failed to generate AI summary:', error);
+                    }
+                } else {
+                    console.log('ℹ️ Skipping AI summary generation - no transcript content');
+                }
+            } catch (error) {
+                console.error('❌ Failed to save session:', error);
+            }
+        }
+
+        function toggleMinimize() {
+            const panel = document.getElementById('listenPanel');
+            const icon = document.getElementById('minimizeIcon');
+            
+            isMinimized = !isMinimized;
+            
+            if (isMinimized) {
+                panel.classList.add('minimized');
+                icon.textContent = '⌃';
+            } else {
+                panel.classList.remove('minimized');
+                icon.textContent = '⌄';
+            }
+        }
+
+        function closeListen() {
+            if (isRecording) {
+                if (confirm('Recording is in progress. Stop recording and close?')) {
+                    stopRecording().then(() => {
+                        if (ipcRenderer) {
+                            ipcRenderer.send('close-listen-panel');
+                        }
+                    });
+                }
+            } else {
+                if (ipcRenderer) {
+                    ipcRenderer.send('close-listen-panel');
+                }
+            }
+        }
+
+        // Handle IPC events
+        if (ipcRenderer) {
+            ipcRenderer.on('force-stop-recording', () => {
+                if (isRecording) {
+                    stopRecording();
+                }
+            });
+
+            // Handle auto-record meeting sessions
+            ipcRenderer.on('auto-record-meeting', async (event, meetingSession) => {
+                console.log('Auto-record meeting session started:', meetingSession);
+                
+                try {
+                    // Update UI to show meeting context
+                    const statusElement = document.querySelector('.status');
+                    if (statusElement) {
+                        statusElement.textContent = `Recording: ${meetingSession.title}`;
+                        statusElement.style.color = '#10b981';
+                    }
+                    
+                    // Store meeting context for the session
+                    currentMeetingContext = {
+                        platform: meetingSession.platform,
+                        title: meetingSession.title,
+                        participants: meetingSession.participants,
+                        meetingUrl: meetingSession.meetingUrl,
+                        startTime: meetingSession.startTime
+                    };
+                    
+                    // Start recording automatically if not already recording
+                    if (!isRecording) {
+                        await startRecording();
+                        console.log('Auto-record started successfully for meeting:', meetingSession.title);
+                    }
+                    
+                } catch (error) {
+                    console.error('Failed to auto-record meeting:', error);
+                }
+            });
+        }
+    </script>
+</body>
+</html>

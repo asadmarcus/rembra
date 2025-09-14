@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: transparent;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        .email-panel {
+            width: 450px;
+            height: 500px;
+            max-height: 90vh;
+            background: rgba(15, 15, 15, 0.85);
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            user-select: none;
+        }
+
+        .email-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.1) 0%, 
+                rgba(255, 255, 255, 0.05) 50%, 
+                rgba(0, 0, 0, 0.1) 100%);
+            border-radius: 20px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .email-panel > * {
+            position: relative;
+            z-index: 2;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px 20px 0 0;
+            cursor: move;
+            -webkit-app-region: drag;
+            flex-shrink: 0;
+            min-height: 52px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-icon {
+            font-size: 16px;
+            color: #ffffff;
+        }
+
+        .header-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .header-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: none;
+            border-radius: 6px;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+            -webkit-app-region: no-drag;
+        }
+
+        .header-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+
+        .back-btn {
+            background: rgba(255, 165, 0, 0.2);
+            color: rgba(255, 165, 0, 0.9);
+            display: none;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 165, 0, 0.3);
+        }
+
+        .content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            min-height: 0;
+        }
+
+        .content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .content::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        .content::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Views */
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        /* Empty states */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-bottom: 16px;
+        }
+
+        .empty-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 8px;
+        }
+
+        .empty-subtitle {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .btn {
+            background: rgba(0, 122, 255, 0.8);
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            color: white;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            background: rgba(0, 122, 255, 0.9);
+        }
+
+        /* Client and Brief Lists */
+        .list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 280px;
+            overflow-y: auto;
+        }
+
+        .list-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 0.5px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .list-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .list-item.selected {
+            background: rgba(255, 165, 0, 0.2);
+            border: 1.5px solid rgba(255, 165, 0, 0.4);
+        }
+
+        .item-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 4px;
+        }
+
+        .item-details {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            line-height: 1.3;
+        }
+
+        /* Client info section */
+        .client-info {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 16px;
+        }
+
+        .client-info-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 2px;
+        }
+
+        .client-info-company {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Source filters */
+        .source-filters {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .filter-tab {
+            background: rgba(255, 255, 255, 0.08);
+            border: 0.5px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 6px 12px;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .filter-tab:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .filter-tab.active {
+            background: rgba(255, 165, 0, 0.2);
+            border-color: rgba(255, 165, 0, 0.4);
+            color: rgba(255, 165, 0, 0.9);
+        }
+
+        /* Email editor */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .form-input {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 6px;
+            padding: 10px;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 13px;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus {
+            border-color: rgba(0, 122, 255, 0.5);
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+            line-height: 1.4;
+        }
+
+        /* Action bar */
+        .action-bar {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.02);
+            flex-shrink: 0;
+            min-height: 52px;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            padding: 8px 16px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-primary {
+            background: rgba(255, 165, 0, 0.8);
+            border: none;
+            border-radius: 6px;
+            padding: 8px 20px;
+            color: white;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary:hover {
+            background: rgba(255, 165, 0, 0.9);
+        }
+
+        .btn-primary:disabled {
+            background: rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.5);
+            cursor: not-allowed;
+        }
+
+        .loading-spinner {
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-panel">
+        <div class="header">
+            <div class="header-left">
+                <button class="header-btn back-btn" id="backBtn" onclick="goBack()">←</button>
+                <div class="header-icon">✉️</div>
+                <div class="header-title" id="headerTitle">Select Client</div>
+            </div>
+            <div class="header-buttons">
+                <button class="header-btn" onclick="minimizeEmail()">−</button>
+                <button class="header-btn" onclick="closeEmail()">×</button>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Client Selection View -->
+            <div class="view active" id="clientView">
+                <div id="clientContent">
+                    <div class="empty-state">
+                        <div class="empty-icon">👥</div>
+                        <div class="empty-title">No clients found</div>
+                        <div class="empty-subtitle">Add clients in Settings to create follow-up emails</div>
+                        <button class="btn" onclick="openSettings()">Go to Settings</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Brief Selection View -->
+            <div class="view" id="briefView">
+                <div class="client-info">
+                    <div class="client-info-name" id="selectedClientName"></div>
+                    <div class="client-info-company" id="selectedClientCompany"></div>
+                </div>
+
+                <div class="source-filters">
+                    <button class="filter-tab active" data-source="all">
+                        <span>📋</span> All
+                    </button>
+                    <button class="filter-tab" data-source="calendar">
+                        <span>📅</span> Calendar
+                    </button>
+                    <button class="filter-tab" data-source="recordings">
+                        <span>🎵</span> Recordings
+                    </button>
+                    <button class="filter-tab" data-source="briefs">
+                        <span>📄</span> Briefs
+                    </button>
+                </div>
+
+                <div id="briefContent">
+                    <div class="empty-state">
+                        <div class="empty-icon">📄</div>
+                        <div class="empty-title">No meeting content found</div>
+                        <div class="empty-subtitle">Create meeting briefs, record meetings, or connect your calendar</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Email Editor View -->
+            <div class="view" id="editorView">
+                <div class="form-group">
+                    <label class="form-label">Subject</label>
+                    <input type="text" class="form-input" id="emailSubject" placeholder="Email Subject">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email Body</label>
+                    <textarea class="form-input form-textarea" id="emailBody" placeholder="Email content will appear here..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-bar">
+            <button class="btn-secondary" id="secondaryBtn" onclick="handleSecondary()" style="display: none;">← Back</button>
+            <button class="btn-primary" id="primaryBtn" onclick="handlePrimary()" disabled>
+                <div class="loading-spinner" id="loadingSpinner" style="display: none;"></div>
+                <span id="primaryBtnText">Next</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const { ipcRenderer } = require('electron');
+        const AIConnectionManager = require('../services/AIConnectionManager');
+
+        let state = {
+            currentView: 'client',
+            clients: [],
+            selectedClient: null,
+            selectedBrief: null,
+            isLoading: false,
+            aiConnection: null
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeEmail();
+            setupEventListeners();
+            loadClients();
+        });
+
+        async function initializeEmail() {
+            try {
+                const { getInstance } = require('../services/AIConnectionManager');
+                state.aiConnection = getInstance();
+                state.aiConnection.on('responseComplete', () => {
+                    handleEmailGenerated();
+                });
+            } catch (error) {
+                console.error('Failed to initialize AI connection:', error);
+            }
+        }
+
+        function setupEventListeners() {
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.filter-tab')) {
+                    const sourceType = e.target.closest('.filter-tab').dataset.source;
+                    selectSourceFilter(sourceType);
+                }
+            });
+
+            ipcRenderer.on('clients-updated', () => {
+                setTimeout(() => loadClients(), 100);
+            });
+        }
+
+        async function loadClients() {
+            try {
+                state.clients = await ipcRenderer.invoke('get-clients');
+                renderClientView();
+            } catch (error) {
+                console.error('Failed to load clients:', error);
+                state.clients = [];
+                renderClientView();
+            }
+        }
+
+        function renderClientView() {
+            const content = document.getElementById('clientContent');
+            
+            if (state.clients.length === 0) {
+                content.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">👥</div>
+                        <div class="empty-title">No clients found</div>
+                        <div class="empty-subtitle">Add clients in Settings to create follow-up emails</div>
+                        <button class="btn" onclick="openSettings()">Go to Settings</button>
+                    </div>
+                `;
+                updatePrimaryButton(false, 'Next');
+                return;
+            }
+
+            const clientsHtml = state.clients.map(client => `
+                <div class="list-item" onclick="selectClient('${client.id}')">
+                    <div class="item-name">${escapeHtml(client.name)}</div>
+                    <div class="item-details">
+                        ${escapeHtml(client.company)}
+                        ${client.email ? ` • ${escapeHtml(client.email)}` : ''}
+                        <br>${client.briefHistory ? client.briefHistory.length : 0} meeting${client.briefHistory && client.briefHistory.length === 1 ? '' : 's'}
+                    </div>
+                </div>
+            `).join('');
+
+            content.innerHTML = `<div class="list">${clientsHtml}</div>`;
+        }
+
+        function selectClient(clientId) {
+            state.selectedClient = state.clients.find(c => c.id === clientId);
+            
+            document.querySelectorAll('.list-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            event.target.closest('.list-item').classList.add('selected');
+            
+            updatePrimaryButton(true, 'Next');
+        }
+
+        function renderBriefView() {
+            document.getElementById('selectedClientName').textContent = state.selectedClient.name;
+            document.getElementById('selectedClientCompany').textContent = state.selectedClient.company;
+
+            const content = document.getElementById('briefContent');
+            
+            if (!state.selectedClient.briefHistory || state.selectedClient.briefHistory.length === 0) {
+                content.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📄</div>
+                        <div class="empty-title">No meeting briefs found</div>
+                        <div class="empty-subtitle">Create meeting briefs first to generate follow-up emails</div>
+                    </div>
+                `;
+                updatePrimaryButton(false, 'Generate Email');
+                return;
+            }
+
+            const sortedBriefs = state.selectedClient.briefHistory.sort((a, b) => 
+                new Date(b.createdAt) - new Date(a.createdAt)
+            );
+
+            const briefsHtml = sortedBriefs.map(brief => `
+                <div class="list-item" onclick="selectBrief('${brief.id}')">
+                    <div class="item-name">${escapeHtml(brief.title)}</div>
+                    <div class="item-details">
+                        ${escapeHtml(brief.objective)}
+                        <br>${formatDate(brief.createdAt)}
+                    </div>
+                </div>
+            `).join('');
+
+            content.innerHTML = `<div class="list">${briefsHtml}</div>`;
+        }
+
+        function selectBrief(briefId) {
+            state.selectedBrief = state.selectedClient.briefHistory.find(b => b.id === briefId);
+            
+            document.querySelectorAll('.list-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            event.target.closest('.list-item').classList.add('selected');
+            
+            updatePrimaryButton(true, 'Generate Email');
+        }
+
+        function selectSourceFilter(sourceType) {
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`[data-source="${sourceType}"]`).classList.add('active');
+            renderBriefView();
+        }
+
+        function showView(viewName) {
+            document.querySelectorAll('.view').forEach(view => {
+                view.classList.remove('active');
+            });
+            document.getElementById(viewName + 'View').classList.add('active');
+            
+            state.currentView = viewName;
+            
+            const backBtn = document.getElementById('backBtn');
+            const headerTitle = document.getElementById('headerTitle');
+            const secondaryBtn = document.getElementById('secondaryBtn');
+            
+            switch (viewName) {
+                case 'client':
+                    headerTitle.textContent = 'Select Client';
+                    backBtn.style.display = 'none';
+                    secondaryBtn.style.display = 'none';
+                    updatePrimaryButton(state.selectedClient !== null, 'Next');
+                    break;
+                case 'brief':
+                    headerTitle.textContent = 'Select Meeting Source';
+                    backBtn.style.display = 'flex';
+                    secondaryBtn.style.display = 'none';
+                    renderBriefView();
+                    break;
+                case 'editor':
+                    headerTitle.textContent = 'Follow-up Email';
+                    backBtn.style.display = 'flex';
+                    secondaryBtn.style.display = 'block';
+                    updatePrimaryButton(true, 'Send Email');
+                    break;
+            }
+        }
+
+        function handlePrimary() {
+            if (state.isLoading) return;
+            
+            switch (state.currentView) {
+                case 'client':
+                    if (state.selectedClient) {
+                        showView('brief');
+                    }
+                    break;
+                case 'brief':
+                    if (state.selectedBrief) {
+                        generateEmail();
+                    }
+                    break;
+                case 'editor':
+                    sendEmail();
+                    break;
+            }
+        }
+
+        function handleSecondary() {
+            goBack();
+        }
+
+        function goBack() {
+            switch (state.currentView) {
+                case 'brief':
+                    state.selectedBrief = null;
+                    showView('client');
+                    break;
+                case 'editor':
+                    showView('brief');
+                    break;
+            }
+        }
+
+        async function generateEmail() {
+            if (!state.selectedClient || !state.selectedBrief || state.isLoading) return;
+
+            setLoading(true, 'Generating...');
+
+            const prompt = `Generate a professional follow-up email based on this meeting information:
+
+Client: ${state.selectedClient.name} from ${state.selectedClient.company}
+Meeting Brief: ${state.selectedBrief.title}
+Meeting Objective: ${state.selectedBrief.objective}
+Meeting Content: ${state.selectedBrief.content}
+Meeting Date: ${formatDate(state.selectedBrief.createdAt)}
+
+Please generate a professional follow-up email that:
+1. Thanks them for their time in the meeting
+2. Briefly recaps the key points from the meeting content
+3. References the meeting objective and how it was addressed
+4. Suggests next steps based on the discussion
+5. Maintains a warm but professional tone
+
+Format your response as:
+SUBJECT: [subject line]
+
+BODY:
+[email body]`;
+
+            try {
+                state.aiConnection.clearConversation();
+                
+                const timeout = setTimeout(() => {
+                    if (state.isLoading) {
+                        handleEmailGenerated();
+                    }
+                }, 30000);
+
+                state.aiConnection.once('responseComplete', () => {
+                    clearTimeout(timeout);
+                });
+
+                await state.aiConnection.sendMessage(prompt);
+            } catch (error) {
+                console.error('Error generating email:', error);
+                setLoading(false);
+                alert('Failed to generate email. Please try again.');
+            }
+        }
+
+        function handleEmailGenerated() {
+            if (!state.isLoading) return;
+
+            let response = '';
+            if (state.aiConnection.lastMessages && state.aiConnection.lastMessages.length > 0) {
+                const lastMessage = state.aiConnection.lastMessages[state.aiConnection.lastMessages.length - 1];
+                if (!lastMessage.isUser) {
+                    response = lastMessage.message;
+                }
+            }
+
+            if (!response && state.aiConnection.messageStream) {
+                response = state.aiConnection.messageStream;
+            }
+
+            if (response) {
+                parseAndDisplayEmail(response);
+                setLoading(false);
+                showView('editor');
+            } else {
+                setLoading(false);
+                alert('Failed to generate email. Please try again.');
+            }
+        }
+
+        function parseAndDisplayEmail(response) {
+            let subject = '';
+            let body = '';
+            
+            const subjectMatch = response.match(/SUBJECT:\s*(.+)/);
+            const bodyMatch = response.match(/BODY:\s*([\s\S]+)/);
+            
+            if (subjectMatch) subject = subjectMatch[1].trim();
+            if (bodyMatch) body = bodyMatch[1].trim();
+            
+            if (!subject || !body) {
+                const lines = response.split('\n');
+                let isBodySection = false;
+                
+                for (const line of lines) {
+                    if (line.startsWith('SUBJECT:')) {
+                        subject = line.substring(8).trim();
+                    } else if (line.startsWith('BODY:')) {
+                        isBodySection = true;
+                    } else if (isBodySection) {
+                        body += line + '\n';
+                    }
+                }
+                
+                if (!subject) subject = 'Follow-up from our meeting';
+                if (!body) body = response;
+            }
+
+            document.getElementById('emailSubject').value = subject;
+            document.getElementById('emailBody').value = body.trim();
+        }
+
+        function sendEmail() {
+            const subject = document.getElementById('emailSubject').value.trim();
+            const body = document.getElementById('emailBody').value.trim();
+
+            if (!subject || !body) {
+                alert('Please ensure all fields are filled.');
+                return;
+            }
+
+            if (!state.selectedClient.email) {
+                alert('Selected client does not have an email address.');
+                return;
+            }
+
+            const mailtoUrl = `mailto:${encodeURIComponent(state.selectedClient.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            require('electron').shell.openExternal(mailtoUrl);
+            closeEmail();
+        }
+
+        function updatePrimaryButton(enabled, text) {
+            const btn = document.getElementById('primaryBtn');
+            const btnText = document.getElementById('primaryBtnText');
+            btn.disabled = !enabled;
+            btnText.textContent = text;
+        }
+
+        function setLoading(loading, text = null) {
+            state.isLoading = loading;
+            const btn = document.getElementById('primaryBtn');
+            const btnText = document.getElementById('primaryBtnText');
+            const spinner = document.getElementById('loadingSpinner');
+            
+            if (loading) {
+                btn.disabled = true;
+                spinner.style.display = 'block';
+                if (text) btnText.textContent = text;
+            } else {
+                spinner.style.display = 'none';
+                updatePrimaryButton(true, getPrimaryButtonText());
+            }
+        }
+
+        function getPrimaryButtonText() {
+            switch (state.currentView) {
+                case 'client': return 'Next';
+                case 'brief': return 'Generate Email';
+                case 'editor': return 'Send Email';
+                default: return 'Next';
+            }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString() + ' at ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function closeEmail() {
+            ipcRenderer.send('close-email-panel');
+        }
+
+        function minimizeEmail() {
+            ipcRenderer.send('minimize-email-panel');
+        }
+
+        function openSettings() {
+            ipcRenderer.send('show-settings');
+        }
+    </script>
+</body>
+</html>

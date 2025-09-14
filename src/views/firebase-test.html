@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Firebase Test</title>
+</head>
+<body>
+    <h1>Firebase Renderer Test</h1>
+    <div id="status">Initializing Firebase...</div>
+    
+    <script type="module">
+        // Import Firebase modules directly in renderer
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js';
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyBhoXlAxO9_YdZY9Bdsi9X3oFpJzbC-FKI",
+            authDomain: "ali-website-1674a.firebaseapp.com",
+            projectId: "ali-website-1674a",
+            storageBucket: "ali-website-1674a.firebasestorage.app",
+            messagingSenderId: "1096024812793",
+            appId: "1:1096024812793:web:14ef02289b05cd11ca4628"
+        };
+        
+        try {
+            console.log('🔥 Initializing Firebase in renderer process...');
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            
+            document.getElementById('status').textContent = '✅ Firebase initialized successfully in renderer process!';
+            console.log('✅ Firebase initialized successfully in renderer process');
+            
+            // Test auth state
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    console.log('🔐 User is signed in:', user.email);
+                } else {
+                    console.log('🔓 User is signed out');
+                }
+            });
+            
+        } catch (error) {
+            console.error('❌ Firebase initialization failed:', error);
+            document.getElementById('status').textContent = '❌ Firebase initialization failed: ' + error.message;
+        }
+    </script>
+</body>
+</html>

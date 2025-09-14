@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Rembra</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: transparent;
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
+
+        .login-container {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 16px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            width: 318px;
+            height: 320px;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        .title {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .title {
+            font-size: 16px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .close-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        .form-label {
+            font-size: 11px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 0.5px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            font-size: 12px;
+            box-sizing: border-box;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: rgba(0, 122, 255, 0.5);
+        }
+
+        .password-container {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            font-size: 10px;
+        }
+
+        .error-message {
+            color: rgba(255, 59, 48, 0.9);
+            font-size: 10px;
+            margin-top: 4px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 8px;
+            border: none;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-bottom: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(to bottom, rgba(0, 122, 255, 0.8), rgba(0, 122, 255, 0.6));
+            color: white;
+        }
+
+        .btn-google {
+            background: linear-gradient(to bottom, rgba(255, 59, 48, 0.8), rgba(255, 59, 48, 0.6));
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 6px 0;
+        }
+
+        .divider-line {
+            flex: 1;
+            height: 0.5px;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .divider-text {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.6);
+            padding: 0 8px;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="header">
+            <button class="close-btn" onclick="goBack()">←</button>
+            <div class="title" id="formTitle">Login</div>
+            <button class="close-btn" onclick="closeWindow()">×</button>
+        </div>
+
+        <form id="authForm">
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-input" id="email" placeholder="Enter your email" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <div class="password-container">
+                    <input type="password" class="form-input" id="password" placeholder="Enter your password" required>
+                    <button type="button" class="password-toggle" onclick="togglePassword()">👁</button>
+                </div>
+            </div>
+
+            <div class="error-message" id="errorMessage"></div>
+
+            <button type="submit" class="btn btn-primary" id="submitBtn">
+                <span id="submitText">Sign In</span>
+                <span id="loadingSpinner" class="loading" style="display: none;"></span>
+            </button>
+
+            <div class="divider">
+                <div class="divider-line"></div>
+                <div class="divider-text">or</div>
+                <div class="divider-line"></div>
+            </div>
+
+            <button type="button" class="btn btn-google" onclick="signInWithGoogle()">
+                🌐 Continue with Google
+            </button>
+        </form>
+    </div>
+
+    <script type="module">
+        // Import Firebase directly in renderer process to avoid Node.js TLS issues
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js';
+        
+        const { ipcRenderer } = require('electron');
+        let isSignUpMode = false;
+        let auth = null;
+
+        // Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyBhoXlAxO9_YdZY9Bdsi9X3oFpJzbC-FKI",
+            authDomain: "ali-website-1674a.firebaseapp.com",
+            projectId: "ali-website-1674a",
+            storageBucket: "ali-website-1674a.firebasestorage.app",
+            messagingSenderId: "1096024812793",
+            appId: "1:1096024812793:web:14ef02289b05cd11ca4628"
+        };
+
+        // Initialize Firebase in renderer process
+        try {
+            console.log('🔥 Initializing Firebase in login renderer...');
+            const app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            console.log('✅ Firebase initialized successfully in login renderer');
+        } catch (error) {
+            console.error('❌ Firebase initialization failed in login:', error);
+        }
+
+        // Get mode from URL params
+        const urlParams = new URLSearchParams(window.location.search);
+        isSignUpMode = urlParams.get('signup') === 'true';
+
+        // Update UI based on mode
+        if (isSignUpMode) {
+            document.getElementById('formTitle').textContent = 'Sign Up';
+            document.getElementById('submitText').textContent = 'Sign Up';
+        }
+
+        document.getElementById('authForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const submitBtn = document.getElementById('submitBtn');
+            const submitText = document.getElementById('submitText');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const errorMessage = document.getElementById('errorMessage');
+
+            // Show loading state
+            submitBtn.disabled = true;
+            submitText.style.display = 'none';
+            loadingSpinner.style.display = 'inline-block';
+            errorMessage.textContent = '';
+
+            try {
+                let result;
+                if (isSignUpMode) {
+                    console.log('🔐 Attempting sign up in renderer...');
+                    result = await createUserWithEmailAndPassword(auth, email, password);
+                } else {
+                    console.log('🔐 Attempting sign in in renderer...');
+                    result = await signInWithEmailAndPassword(auth, email, password);
+                }
+
+                if (result.user) {
+                    console.log('✅ Authentication successful in renderer:', result.user.email);
+                    
+                    // Notify main process of successful auth
+                    // Main process will handle closing the login window
+                    await ipcRenderer.invoke('auth-success', {
+                        user: {
+                            email: result.user.email,
+                            uid: result.user.uid
+                        }
+                    });
+                    
+                    // Don't call closeWindow() here - main process handles it
+                } else {
+                    errorMessage.textContent = 'Authentication failed';
+                }
+            } catch (error) {
+                console.error('❌ Authentication error in renderer:', error);
+                errorMessage.textContent = getErrorMessage(error);
+            } finally {
+                // Reset loading state
+                submitBtn.disabled = false;
+                submitText.style.display = 'inline';
+                loadingSpinner.style.display = 'none';
+            }
+        });
+
+        function getErrorMessage(error) {
+            switch (error.code) {
+                case 'auth/invalid-email':
+                    return 'Invalid email address';
+                case 'auth/wrong-password':
+                    return 'Incorrect password';
+                case 'auth/user-not-found':
+                    return 'No account found with this email';
+                case 'auth/email-already-in-use':
+                    return 'An account already exists with this email';
+                case 'auth/weak-password':
+                    return 'Password is too weak';
+                case 'auth/network-request-failed':
+                    return 'Network error. Please check your connection';
+                default:
+                    return error.message;
+            }
+        }
+
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggle = document.querySelector('.password-toggle');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggle.textContent = '🙈';
+            } else {
+                passwordInput.type = 'password';
+                toggle.textContent = '👁';
+            }
+        }
+
+        async function signInWithGoogle() {
+            try {
+                const result = await ipcRenderer.invoke('google-signin');
+                if (result.success) {
+                    // Don't call closeWindow() - main process handles closing after successful auth
+                } else {
+                    document.getElementById('errorMessage').textContent = result.error;
+                }
+            } catch (error) {
+                document.getElementById('errorMessage').textContent = error.message;
+            }
+        }
+
+        function closeWindow() {
+            ipcRenderer.send('close-login');
+        }
+
+        function goBack() {
+            ipcRenderer.send('show-welcome');
+        }
+    </script>
+</body>
+</html>
