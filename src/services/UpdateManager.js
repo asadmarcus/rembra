@@ -1,5 +1,5 @@
 const { autoUpdater } = require('electron-updater');
-const { dialog } = require('electron');
+const { dialog, app } = require('electron');
 
 class UpdateManager {
     constructor(mainWindow) {
@@ -8,6 +8,12 @@ class UpdateManager {
     }
 
     setupAutoUpdater() {
+        // Only enable auto-updater in production builds
+        if (process.env.NODE_ENV === 'development' || !app.isPackaged) {
+            console.log('🔧 Development mode - auto-updater disabled');
+            return;
+        }
+        
         // Configure auto-updater
         autoUpdater.checkForUpdatesAndNotify();
         
@@ -79,11 +85,35 @@ class UpdateManager {
 
     // Manual check for updates (can be called from menu)
     checkForUpdates() {
+        // In development mode, show a message instead
+        if (process.env.NODE_ENV === 'development' || !app.isPackaged) {
+            dialog.showMessageBox(this.mainWindow, {
+                type: 'info',
+                title: 'Development Mode',
+                message: 'Auto-updater is disabled in development mode',
+                detail: 'Updates will work automatically in the packaged app.',
+                buttons: ['OK']
+            });
+            return;
+        }
+        
         autoUpdater.checkForUpdatesAndNotify();
     }
 
     // Force update check
     async checkForUpdatesManual() {
+        // In development mode, show a message instead
+        if (process.env.NODE_ENV === 'development' || !app.isPackaged) {
+            dialog.showMessageBox(this.mainWindow, {
+                type: 'info',
+                title: 'Development Mode',
+                message: 'Auto-updater is disabled in development mode',
+                detail: 'Updates will work automatically in the packaged app.',
+                buttons: ['OK']
+            });
+            return;
+        }
+        
         try {
             const result = await autoUpdater.checkForUpdates();
             if (!result.downloadPromise) {

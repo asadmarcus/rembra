@@ -56,8 +56,8 @@ echo -e "${BLUE}📦 Installing dependencies...${NC}"
 npm install
 
 # Build the app for all platforms
-echo -e "${BLUE}🔨 Building application for macOS only (testing)...${NC}"
-npm run dist
+echo -e "${BLUE}🔨 Building application for all platforms...${NC}"
+npm run dist:all
 
 # Check if build was successful
 if [ $? -ne 0 ]; then
