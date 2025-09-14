@@ -101,7 +101,8 @@
       "icon": "assets/icons/icon.icns",
       "category": "public.app-category.productivity",
       "hardenedRuntime": true,
-      "gatekeeperAssess": false
+      "gatekeeperAssess": false,
+      "identity": "Apple Development: asad8548@gmail.com (8DA6M29P67)"
     },
     "linux": {
       "target": "AppImage",
