@@ -2597,12 +2597,32 @@
                 // Handle sign out
                 try {
                     console.log('🔓 Signing out...');
-                    await ipcRenderer.invoke('logout');
+                    
+                    // Sign out from Firebase in renderer process first
+                    try {
+                        const { getAuth, signOut } = require('firebase/auth');
+                        const auth = getAuth();
+                        if (auth.currentUser) {
+                            console.log('🔓 Signing out from Firebase in renderer...');
+                            await signOut(auth);
+                            console.log('✅ Firebase signOut in renderer successful');
+                        }
+                    } catch (firebaseError) {
+                        console.error('⚠️ Firebase signOut in renderer failed:', firebaseError);
+                        // Continue with main process logout anyway
+                    }
+                    
+                    // Then call main process logout
+                    const result = await ipcRenderer.invoke('logout');
+                    console.log('🔓 Main process logout result:', result);
                     
                     // Reload user data to reflect signed-out state
                     await loadUserData();
                 } catch (error) {
                     console.error('Error signing out:', error);
+                    
+                    // Force reload the page to ensure clean state
+                    window.location.reload();
                 }
             } else if (buttonText === 'Re-authenticate' || buttonText === 'Sign In') {
                 // Handle sign in / re-authentication

@@ -228,10 +228,54 @@ class RembraApp {
     }, LAUNCH_ANIMATION_DURATION);
   }
 
-  proceedToMainApp() {
-    if (this.isAuthenticated) {
-      this.showMainApp();
-    } else {
+  async proceedToMainApp() {
+    // First, verify authentication with Firebase
+    console.log('🔍 Verifying authentication before showing main app...');
+    
+    try {
+      // Check if Firebase user is actually authenticated
+      const currentUser = this.firebaseManager.getCurrentUser();
+      const isFirebaseAuthenticated = currentUser !== null;
+      
+      console.log('🔍 Firebase authentication check:', {
+        currentUser: currentUser?.email || 'null',
+        isFirebaseAuthenticated,
+        storedIsAuthenticated: this.isAuthenticated
+      });
+      
+      // If stored auth state doesn't match Firebase state, correct it
+      if (this.isAuthenticated && !isFirebaseAuthenticated) {
+        console.log('⚠️ Auth state mismatch - stored says authenticated but Firebase says no');
+        this.isAuthenticated = false;
+        store.set('isAuthenticated', false);
+        store.delete('currentUser');
+      } else if (!this.isAuthenticated && isFirebaseAuthenticated) {
+        console.log('✅ Firebase user found, updating stored auth state');
+        this.isAuthenticated = true;
+        store.set('isAuthenticated', true);
+        // Store the current user data
+        const userData = {
+          email: currentUser.email,
+          uid: currentUser.uid,
+          displayName: currentUser.displayName || currentUser.email.split('@')[0]
+        };
+        store.set('currentUser', userData);
+      }
+      
+      // Now proceed based on verified authentication state
+      if (this.isAuthenticated && isFirebaseAuthenticated) {
+        console.log('✅ User verified as authenticated - showing main app');
+        this.showMainApp();
+      } else {
+        console.log('🔐 User not authenticated - showing welcome window');
+        this.showWelcomeWindow();
+      }
+    } catch (error) {
+      console.error('❌ Error during authentication verification:', error);
+      // On error, assume not authenticated
+      this.isAuthenticated = false;
+      store.set('isAuthenticated', false);
+      store.delete('currentUser');
       this.showWelcomeWindow();
     }
   }
@@ -473,27 +517,56 @@ class RembraApp {
 
     ipcMain.handle('logout', async () => {
       try {
+        console.log('🔓 Logout requested');
+        
+        // Sign out from Firebase
         const result = await this.firebaseManager.signOut();
-        if (result.success) {
-          this.isAuthenticated = false;
-          store.set('isAuthenticated', false);
-          store.delete('currentUser'); // Clear stored user data
-          
-          // Close all windows except welcome
-          if (this.mainWindow) {
-            this.mainWindow.close();
-            this.mainWindow = null;
-          }
-          if (this.settingsWindow) {
-            this.settingsWindow.close();
-            this.settingsWindow = null;
-          }
-          
-          this.showWelcomeWindow();
+        console.log('🔓 Firebase signOut result:', result);
+        
+        // Always clear local auth state regardless of Firebase result
+        this.isAuthenticated = false;
+        store.set('isAuthenticated', false);
+        store.delete('currentUser'); // Clear stored user data
+        
+        console.log('🔓 Cleared local authentication state');
+        
+        // Close all windows except welcome
+        if (this.mainWindow) {
+          this.mainWindow.close();
+          this.mainWindow = null;
+          console.log('🔓 Closed main window');
         }
-        return result;
+        if (this.settingsWindow) {
+          this.settingsWindow.close();
+          this.settingsWindow = null;
+          console.log('🔓 Closed settings window');
+        }
+        
+        // Show welcome window for re-authentication
+        this.showWelcomeWindow();
+        console.log('🔓 Showed welcome window');
+        
+        return { success: true };
       } catch (error) {
-        return { success: false, error: error.message };
+        console.error('❌ Logout error:', error);
+        
+        // Even if Firebase sign out fails, clear local state
+        this.isAuthenticated = false;
+        store.set('isAuthenticated', false);
+        store.delete('currentUser');
+        
+        if (this.mainWindow) {
+          this.mainWindow.close();
+          this.mainWindow = null;
+        }
+        if (this.settingsWindow) {
+          this.settingsWindow.close();
+          this.settingsWindow = null;
+        }
+        
+        this.showWelcomeWindow();
+        
+        return { success: true, warning: 'Local logout completed despite Firebase error' };
       }
     });
 

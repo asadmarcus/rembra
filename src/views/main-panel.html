@@ -126,6 +126,44 @@
     <script>
         const { ipcRenderer } = require('electron');
 
+        // Check authentication status on load
+        async function checkAuthentication() {
+            try {
+                const userData = await ipcRenderer.invoke('get-user-data');
+                console.log('🔍 Main panel auth check:', userData);
+                
+                if (!userData.success || !userData.user) {
+                    console.log('❌ User not authenticated in main panel - hiding and showing welcome');
+                    // Hide main panel and show welcome window
+                    ipcRenderer.send('hide-main-panel');
+                    ipcRenderer.send('show-welcome');
+                    return false;
+                }
+                
+                console.log('✅ User authenticated in main panel:', userData.user.email);
+                return true;
+            } catch (error) {
+                console.error('❌ Auth check error in main panel:', error);
+                ipcRenderer.send('hide-main-panel');
+                ipcRenderer.send('show-welcome');
+                return false;
+            }
+        }
+
+        // Run auth check when page loads
+        window.addEventListener('DOMContentLoaded', async () => {
+            const isAuthenticated = await checkAuthentication();
+            if (!isAuthenticated) {
+                // Disable all buttons if not authenticated
+                const buttons = document.querySelectorAll('.btn');
+                buttons.forEach(btn => {
+                    btn.disabled = true;
+                    btn.style.opacity = '0.5';
+                    btn.style.cursor = 'not-allowed';
+                });
+            }
+        });
+
         function openSettings() {
             ipcRenderer.send('show-settings');
         }
